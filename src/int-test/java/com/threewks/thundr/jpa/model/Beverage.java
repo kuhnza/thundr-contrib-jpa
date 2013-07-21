@@ -17,27 +17,35 @@
  */
 package com.threewks.thundr.jpa.model;
 
-import javax.persistence.*;
 import java.util.UUID;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.Table;
 
 @Entity
 @Table(name = "beverage")
-@NamedQueries({
-	@NamedQuery(name = "Beverage.findAllByName", query = "select b from Beverage b where b.name = ?"),
-	@NamedQuery(name = "Beverage.findAllAlcoholicBeverages", query = "select b from Beverage b where b.alcoholic = true"),
-	@NamedQuery(name = "Beverage.findAllByType", query = "select b from Beverage b where b.alcoholic = :alcoholic")
-})
+@NamedQueries({ @NamedQuery(name = "Beverage.findAllByName", query = "select b from Beverage b where b.name = ?"),
+		@NamedQuery(name = "Beverage.findAllAlcoholicBeverages", query = "select b from Beverage b where b.alcoholic = true"),
+		@NamedQuery(name = "Beverage.findAllByType", query = "select b from Beverage b where b.alcoholic = :alcoholic") })
 public class Beverage {
 
 	@Id
 	@Column(name = "id")
-	public String id = UUID.randomUUID().toString();
+	private String id = UUID.randomUUID().toString();
 
 	@Column(name = "name", nullable = false)
-	public String name;
+	private String name;
 
 	@Column(name = "alcoholic")
-	public boolean alcoholic = false;
+	private boolean alcoholic = false;
+
+	public Beverage() {
+
+	}
 
 	public Beverage(String name) {
 		this.name = name;
@@ -47,4 +55,21 @@ public class Beverage {
 		this(name);
 		this.alcoholic = alcoholic;
 	}
+
+	public String getId() {
+		return id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public boolean isAlcoholic() {
+		return alcoholic;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
 }

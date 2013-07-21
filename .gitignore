@@ -1,4 +1,7 @@
 thundr-jpa.iml
+.classpath
 .idea/
+.project
+.settings/
 target/
 .DS_Store
