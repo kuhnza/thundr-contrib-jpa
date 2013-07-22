@@ -17,14 +17,15 @@
  */
 package com.threewks.thundr.jpa;
 
+import java.util.Collections;
+import java.util.List;
+
+import javax.servlet.ServletContext;
+
 import com.threewks.thundr.action.method.ActionInterceptorRegistry;
 import com.threewks.thundr.configuration.Environment;
 import com.threewks.thundr.injection.BaseInjectionConfiguration;
 import com.threewks.thundr.injection.UpdatableInjectionContext;
-
-import javax.servlet.ServletContext;
-import java.util.Collections;
-import java.util.List;
 
 public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 
@@ -46,10 +47,10 @@ public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 		injectionContext.inject(registry).as(PersistenceManagerRegistry.class);
 
 		List<String> persistenceUnits = getPersistenceUnitNames();
-		for(String persistenceUnit : persistenceUnits){
+		for (String persistenceUnit : persistenceUnits) {
 			PersistenceManager persistenceManager = new PersistenceManagerImpl(persistenceUnit);
 			registry.register(persistenceUnit, persistenceManager);
-			injectionContext.inject(persistenceManager).named(persistenceUnit).as(PersistenceManager.class);
+			injectionContext.inject(persistenceManager).as(PersistenceManager.class);
 		}
 
 		// Put reference into servlet context to provide context listener with access to call
@@ -64,9 +65,9 @@ public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 
 	/**
 	 * Gets a list of persistence unit names to initialize. Defaults to a single persistence unit named after the
-	 * current environment as provided by {@link Environment#get()}. Override this  if you wish to initialize a
+	 * current environment as provided by {@link Environment#get()}. Override this if you wish to initialize a
 	 * different or multiple persistence managers.
-	 *
+	 * 
 	 * @return a list of persistence unit names
 	 */
 	protected List<String> getPersistenceUnitNames() {
