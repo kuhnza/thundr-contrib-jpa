@@ -17,12 +17,10 @@
  */
 package com.threewks.thundr.jpa;
 
+import java.util.concurrent.ConcurrentMap;
 
 import com.google.common.collect.Maps;
-import com.threewks.thundr.jpa.exception.MultiplePersistenceManagersReturnedException;
 import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
-
-import java.util.concurrent.ConcurrentMap;
 
 public class PersistenceManagerRegistryImpl implements PersistenceManagerRegistry {
 	private ConcurrentMap<String, PersistenceManager> instances = Maps.newConcurrentMap();
@@ -34,14 +32,9 @@ public class PersistenceManagerRegistryImpl implements PersistenceManagerRegistr
 
 	@Override
 	public PersistenceManager get(String persistenceUnit) {
-		if (persistenceUnit == null) {
-			return getDefaultPersistenceManager();
-		}
-
 		PersistenceManager persistenceManager = instances.get(persistenceUnit);
 		if (persistenceManager == null) {
-			throw new PersistenceManagerDoesNotExistException(
-					"Persistence manager matching persistence unit %s not found", persistenceUnit);
+			throw new PersistenceManagerDoesNotExistException("Persistence manager matching persistence unit %s not found", persistenceUnit);
 		}
 		return persistenceManager;
 	}
@@ -52,18 +45,5 @@ public class PersistenceManagerRegistryImpl implements PersistenceManagerRegistr
 			persistenceManager.destroy();
 		}
 		instances.clear();
-	}
-
-	private PersistenceManager getDefaultPersistenceManager() {
-		int count = instances.size();
-
-		if (count < 1) {
-			throw new PersistenceManagerDoesNotExistException(
-					"Unable to retrieve default PersistenceManager. None are registered.");
-		} else if (count > 1) {
-			throw new MultiplePersistenceManagersReturnedException("Unable to retrieve default PersistenceManager. " +
-					"More than one PersistenceManager is registered, you must specify the persistence unit name.");
-		}
-		return instances.entrySet().iterator().next().getValue();
 	}
 }

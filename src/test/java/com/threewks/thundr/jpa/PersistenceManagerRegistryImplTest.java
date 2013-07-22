@@ -17,18 +17,16 @@
  */
 package com.threewks.thundr.jpa;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.mock;
 
-import com.threewks.thundr.jpa.exception.MultiplePersistenceManagersReturnedException;
-import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Mockito.mock;
+import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
 
 public class PersistenceManagerRegistryImplTest {
 	@Rule
@@ -62,31 +60,6 @@ public class PersistenceManagerRegistryImplTest {
 
 		persistenceManagerRegistry.clear();
 		persistenceManagerRegistry.get(persistenceUnit);
-	}
-
-	@Test
-	public void shouldRetrieveDefaultWhenOnlyOnePersistenceManagerRegistered() {
-		PersistenceManager persistenceManager = mock(PersistenceManager.class);
-
-		persistenceManagerRegistry.register("test", persistenceManager);
-		assertThat(persistenceManagerRegistry.get(null), is(notNullValue()));
-		assertThat(persistenceManagerRegistry.get(null), is(persistenceManager));
-	}
-
-	@Test
-	public void shouldThrowErrorRequestingDefaultPersistenceManagerWhenNoneRegistered() {
-		thrown.expect(PersistenceManagerDoesNotExistException.class);
-
-		persistenceManagerRegistry.get(null);
-	}
-
-	@Test
-	public void shouldThrowErrorRequestingDefaultPersistenceManagerWhenMoreThanOneRegistered() {
-		thrown.expect(MultiplePersistenceManagersReturnedException.class);
-
-		persistenceManagerRegistry.register("test1", mock(PersistenceManager.class));
-		persistenceManagerRegistry.register("test2", mock(PersistenceManager.class));
-		persistenceManagerRegistry.get(null);
 	}
 
 	@Test

@@ -17,14 +17,14 @@
  */
 package com.threewks.thundr.jpa;
 
-import com.threewks.thundr.action.method.ActionInterceptor;
-import com.threewks.thundr.jpa.exception.MultiplePersistenceManagersReturnedException;
-import com.threewks.thundr.jpa.exception.TransactionalAnnotationException;
-import com.threewks.thundr.logger.Logger;
-import com.threewks.thundr.view.ViewResolutionException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
+
+import com.threewks.thundr.action.method.ActionInterceptor;
+import com.threewks.thundr.logger.Logger;
+import com.threewks.thundr.view.ViewResolutionException;
 
 public class TransactionalActionInterceptor implements ActionInterceptor<Transactional> {
 	private PersistenceManagerRegistry persistenceManagerRegistry;
@@ -36,13 +36,13 @@ public class TransactionalActionInterceptor implements ActionInterceptor<Transac
 	@Override
 	public <T> T before(Transactional annotation, HttpServletRequest req, HttpServletResponse resp) {
 		Logger.debug("Beginning transaction...");
-		getPersistenceManager(annotation.value()).beginTransaction();
+		getPersistenceManager(annotation).beginTransaction();
 		return null;
 	}
 
 	@Override
 	public <T> T after(Transactional annotation, HttpServletRequest req, HttpServletResponse resp) {
-		PersistenceManager persistenceManager = getPersistenceManager(annotation.value());
+		PersistenceManager persistenceManager = getPersistenceManager(annotation);
 
 		try {
 			persistenceManager.commit();
@@ -57,7 +57,7 @@ public class TransactionalActionInterceptor implements ActionInterceptor<Transac
 
 	@Override
 	public <T> T exception(Transactional annotation, Exception e, HttpServletRequest req, HttpServletResponse resp) {
-		PersistenceManager persistenceManager = getPersistenceManager(annotation.value());
+		PersistenceManager persistenceManager = getPersistenceManager(annotation);
 
 		try {
 			Logger.error("Unchecked exception, rolling back transaction.");
@@ -71,12 +71,13 @@ public class TransactionalActionInterceptor implements ActionInterceptor<Transac
 		throw new ViewResolutionException(e, e.getMessage());
 	}
 
-	private PersistenceManager getPersistenceManager(String persistenceUnit) {
-		try {
-			return persistenceManagerRegistry.get(persistenceUnit);
-		} catch (MultiplePersistenceManagersReturnedException e) {
-			throw new TransactionalAnnotationException(e, "More than one PersistenceManager was found in registry. " +
-					"You must specify a persistence unit name when using multiple data sources.");
-		}
+	private PersistenceManager getPersistenceManager(Transactional annotation) {
+		String persistenceManagerName = persistenceManagerName(annotation);
+		return persistenceManagerRegistry.get(persistenceManagerName);
+	}
+
+	private String persistenceManagerName(Transactional annotation) {
+		String persistenceUnit = annotation.value();
+		return StringUtils.isNotBlank(persistenceUnit) ? persistenceUnit : PersistenceManager.DefaultName;
 	}
 }

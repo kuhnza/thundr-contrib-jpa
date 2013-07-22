@@ -17,10 +17,14 @@
  */
 package com.threewks.thundr.jpa;
 
-import com.threewks.thundr.action.method.ActionInterceptorRegistry;
-import com.threewks.thundr.configuration.Environment;
-import com.threewks.thundr.injection.InjectionContextImpl;
-import com.threewks.thundr.injection.UpdatableInjectionContext;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
+
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.servlet.ServletContext;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,14 +34,9 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.servlet.ServletContext;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Mockito.*;
+import com.threewks.thundr.action.method.ActionInterceptorRegistry;
+import com.threewks.thundr.injection.InjectionContextImpl;
+import com.threewks.thundr.injection.UpdatableInjectionContext;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Persistence.class)
@@ -46,12 +45,11 @@ public class JpaInjectionConfigurationTest {
 
 	@Before
 	public void before() {
-		Environment.set("test");
-
 		PowerMockito.mockStatic(Persistence.class);
 		when(Persistence.createEntityManagerFactory(Mockito.anyString())).thenReturn(mock(EntityManagerFactory.class));
 
 		injectionContext.inject(mock(ServletContext.class)).as(ServletContext.class);
+		injectionContext.inject("default:local").named(JpaInjectionConfiguration.PersistenceManagersConfigName).as(String.class);
 
 		ActionInterceptorRegistry actionInterceptorRegistry = mock(ActionInterceptorRegistry.class);
 		injectionContext.inject(actionInterceptorRegistry).as(ActionInterceptorRegistry.class);
@@ -62,16 +60,13 @@ public class JpaInjectionConfigurationTest {
 	@Test
 	public void shouldInjectTransactionalActionInterceptor() {
 		ActionInterceptorRegistry registry = injectionContext.get(ActionInterceptorRegistry.class);
-		verify(registry).registerInterceptor(
-				Matchers.eq(Transactional.class),
-				Matchers.any(TransactionalActionInterceptor.class));
+		verify(registry).registerInterceptor(Matchers.eq(Transactional.class), Matchers.any(TransactionalActionInterceptor.class));
 	}
 
 	@Test
 	public void shouldInjectPersistenceManagerRegistry() {
 		PersistenceManagerRegistry registry = injectionContext.get(PersistenceManagerRegistry.class);
 		assertThat(registry, is(notNullValue()));
-		assertThat(registry.get(null), is(notNullValue()));
-		assertThat(registry.get("test"), is(notNullValue()));
+		assertThat(registry.get("default"), is(notNullValue()));
 	}
 }

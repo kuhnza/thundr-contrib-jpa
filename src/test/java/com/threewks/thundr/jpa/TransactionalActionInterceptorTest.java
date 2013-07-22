@@ -46,7 +46,7 @@ public class TransactionalActionInterceptorTest {
 		persistenceManager = mock(PersistenceManager.class);
 
 		persistenceManagerRegistry = new PersistenceManagerRegistryImpl();
-		persistenceManagerRegistry.register("test", persistenceManager);
+		persistenceManagerRegistry.register("default", persistenceManager);
 
 		interceptor = new TransactionalActionInterceptor(persistenceManagerRegistry);
 	}
@@ -105,14 +105,6 @@ public class TransactionalActionInterceptorTest {
 		thrown.expect(PersistenceManagerDoesNotExistException.class);
 
 		when(annotation.value()).thenReturn("i don't exist");
-		interceptor.before(annotation, null, null);
-	}
-
-	@Test
-	public void shouldThrowExceptionWhenUsingDefaultPersistenceUnitWithMoreThanOnePersistenceManagerRegistered() {
-		thrown.expect(TransactionalAnnotationException.class);
-
-		persistenceManagerRegistry.register("another", mock(PersistenceManager.class));
 		interceptor.before(annotation, null, null);
 	}
 }

@@ -20,6 +20,7 @@ package com.threewks.thundr.jpa;
 import javax.persistence.EntityManager;
 
 public interface PersistenceManager {
+	public static final String DefaultName = "default";
 
 	EntityManager getEntityManager();
 

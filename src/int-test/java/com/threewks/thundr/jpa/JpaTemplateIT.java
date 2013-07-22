@@ -51,8 +51,6 @@ public class JpaTemplateIT {
 
 	@Before
 	public void before() {
-		Environment.set("test");
-
 		template = new JpaTemplate<Beverage>(setupPersistenceManager.getPersistenceManager(), Beverage.class);
 	}
 

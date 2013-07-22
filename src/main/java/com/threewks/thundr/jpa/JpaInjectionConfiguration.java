@@ -17,19 +17,23 @@
  */
 package com.threewks.thundr.jpa;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.threewks.thundr.action.method.ActionInterceptorRegistry;
 import com.threewks.thundr.configuration.Environment;
 import com.threewks.thundr.injection.BaseInjectionConfiguration;
 import com.threewks.thundr.injection.UpdatableInjectionContext;
+import com.threewks.thundr.jpa.exception.JpaException;
+import com.threewks.thundr.logger.Logger;
 
 public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
-
 	public static final String PersistenceManagerRegistry = String.format("thundr-jpa-%s", PersistenceManagerRegistryImpl.class);
+	public static final String PersistenceManagersConfigName = "persistenceManagers";
 
 	@Override
 	public void configure(UpdatableInjectionContext injectionContext) {
@@ -46,11 +50,13 @@ public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 		PersistenceManagerRegistry registry = new PersistenceManagerRegistryImpl();
 		injectionContext.inject(registry).as(PersistenceManagerRegistry.class);
 
-		List<String> persistenceUnits = getPersistenceUnitNames();
-		for (String persistenceUnit : persistenceUnits) {
-			PersistenceManager persistenceManager = new PersistenceManagerImpl(persistenceUnit);
-			registry.register(persistenceUnit, persistenceManager);
-			injectionContext.inject(persistenceManager).as(PersistenceManager.class);
+		for (Map.Entry<String, String> persistenceManagerAndUnit : getPersistenceUnitNames(injectionContext).entrySet()) {
+			String persistenceManagerName = persistenceManagerAndUnit.getKey();
+			String persistenceUnitName = persistenceManagerAndUnit.getValue();
+			PersistenceManager persistenceManager = new PersistenceManagerImpl(persistenceUnitName);
+			registry.register(persistenceManagerName, persistenceManager);
+			injectionContext.inject(persistenceManager).named(persistenceManagerName).as(PersistenceManager.class);
+			Logger.info("Registered persistence manager %s against persistence unit %s", persistenceManagerName, persistenceUnitName);
 		}
 
 		// Put reference into servlet context to provide context listener with access to call
@@ -68,9 +74,28 @@ public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 	 * current environment as provided by {@link Environment#get()}. Override this if you wish to initialize a
 	 * different or multiple persistence managers.
 	 * 
+	 * @param injectionContext
+	 * 
 	 * @return a list of persistence unit names
 	 */
-	protected List<String> getPersistenceUnitNames() {
-		return Collections.singletonList(Environment.get());
+	protected Map<String, String> getPersistenceUnitNames(UpdatableInjectionContext injectionContext) {
+		Map<String, String> persistenceManagerAndPersistenceUnit = new LinkedHashMap<String, String>();
+
+		String persistenceManagersString = injectionContext.get(String.class, PersistenceManagersConfigName);
+		String[] persistenceManagers = StringUtils.split(persistenceManagersString);
+		if (persistenceManagers == null) {
+			persistenceManagerAndPersistenceUnit.put(PersistenceManager.DefaultName, PersistenceManager.DefaultName);
+		} else {
+			for (String persistenceManager : persistenceManagers) {
+				String[] persistenceManagerAndUnit = StringUtils.split(persistenceManager, ":");
+				if (persistenceManagerAndUnit.length != 2) {
+					throw new JpaException(
+							"Failed to initialise persistence managers, each persistence manager is expected to be paired with a persistence unit in the form <manager:unit>, but got '%s'",
+							persistenceManager);
+				}
+				persistenceManagerAndPersistenceUnit.put(persistenceManagerAndUnit[0], persistenceManagerAndUnit[1]);
+			}
+		}
+		return persistenceManagerAndPersistenceUnit;
 	}
 }
