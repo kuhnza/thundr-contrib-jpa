@@ -55,7 +55,9 @@ public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 			String persistenceUnitName = persistenceManagerAndUnit.getValue();
 			PersistenceManager persistenceManager = new PersistenceManagerImpl(persistenceUnitName);
 			registry.register(persistenceManagerName, persistenceManager);
-			injectionContext.inject(persistenceManager).named(persistenceManagerName).as(PersistenceManager.class);
+			// TODO - NAO - this crucial fix requires the next version of thundr
+			// injectionContext.inject(persistenceManager).named(persistenceManagerName).as(PersistenceManager.class);
+			injectionContext.inject(persistenceManager).as(PersistenceManager.class);
 			Logger.info("Registered persistence manager %s against persistence unit %s", persistenceManagerName, persistenceUnitName);
 		}
 
