@@ -17,18 +17,18 @@
  */
 package com.threewks.thundr.jpa;
 
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
-import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
-import com.threewks.thundr.jpa.exception.TransactionalAnnotationException;
-import com.threewks.thundr.view.ViewResolutionException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
+import com.threewks.thundr.jpa.exception.TransactionalAnnotationException;
+import com.threewks.thundr.view.ViewResolutionException;
 
 public class TransactionalActionInterceptorTest {
 	@Rule
@@ -65,11 +65,38 @@ public class TransactionalActionInterceptorTest {
 	}
 
 	@Test
+	public void shouldAlwaysCloseEntityManagerOnCommitEvenOnExceptions() {
+		doThrow(new RuntimeException("expected")).when(persistenceManager).commit();
+		try {
+			interceptor.after(annotation, null, null);
+			fail("Expected exception");
+		} catch (RuntimeException e) {
+			assertThat(e.getMessage(), is("expected"));
+		}
+
+		verify(persistenceManager).closeEntityManager();
+	}
+
+	@Test
 	public void shouldRollbackTransactionAndCloseEntityManager() {
 		thrown.expect(ViewResolutionException.class);
 
 		interceptor.exception(annotation, new Exception("Intentional"), null, null);
 		verify(persistenceManager).rollback();
+		verify(persistenceManager).closeEntityManager();
+	}
+
+	@Test
+	public void shouldAlwaysCloseEntityManagerOnRollbackEvenOnExceptions() {
+		doThrow(new RuntimeException("expected")).when(persistenceManager).rollback();
+		try {
+			RuntimeException e = new RuntimeException("cause");
+			interceptor.exception(annotation, e, null, null);
+			fail("Expected exception");
+		} catch (RuntimeException e) {
+			assertThat(e.getMessage(), is("expected"));
+		}
+
 		verify(persistenceManager).closeEntityManager();
 	}
 

@@ -18,6 +18,7 @@
 package com.threewks.thundr.jpa.exception;
 
 public class MultiplePersistenceManagersReturnedException extends JpaException {
+	private static final long serialVersionUID = 1L;
 	public MultiplePersistenceManagersReturnedException(String format, Object... formatArgs) {
 		super(format, formatArgs);
 	}

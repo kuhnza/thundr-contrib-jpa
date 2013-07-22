@@ -23,7 +23,6 @@ import java.util.Map;
 import javax.persistence.EntityManager;
 import javax.persistence.TypedQuery;
 
-
 /**
  * JpaTemplate class inspired by Spring's JpaTemplate without Spring framework baggage.
  */
@@ -72,7 +71,9 @@ public class JpaTemplate<T> {
 		return execute(new JpaAction<T>() {
 			@Override
 			public T run(EntityManager em) {
-				return em.getReference(type, id);
+				// TODO - the api contract of throwing EntityNotFoundException is unclear, this should probably be consistent from this method
+				T reference = em.getReference(type, id);
+				return reference;
 			}
 		});
 	}

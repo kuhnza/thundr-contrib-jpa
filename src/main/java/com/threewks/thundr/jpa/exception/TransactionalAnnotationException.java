@@ -18,6 +18,8 @@
 package com.threewks.thundr.jpa.exception;
 
 public class TransactionalAnnotationException extends JpaException {
+	private static final long serialVersionUID = 1L;
+
 	public TransactionalAnnotationException(Throwable cause, String format, Object... formatArgs) {
 		super(cause, format, formatArgs);
 	}

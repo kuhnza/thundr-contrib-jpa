@@ -17,20 +17,25 @@
  */
 package com.threewks.thundr.jpa;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+import java.util.List;
+import java.util.Map;
+
+import javax.persistence.EntityExistsException;
+
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import com.google.common.collect.Maps;
 import com.threewks.thundr.configuration.Environment;
 import com.threewks.thundr.jpa.model.Beverage;
 import com.threewks.thundr.jpa.rule.SetupPersistenceManager;
 import com.threewks.thundr.jpa.rule.SetupTransaction;
-import org.junit.*;
-import org.junit.rules.ExpectedException;
-
-import javax.persistence.EntityExistsException;
-import java.util.List;
-import java.util.Map;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 
 public class JpaTemplateIT {
 	@ClassRule
@@ -60,14 +65,14 @@ public class JpaTemplateIT {
 		assertThat(template.count(), is(2l));
 	}
 
-   	@Test
+	@Test
 	public void shouldRetrieveEntityById() {
 		addSampleData();
 
 		Beverage beverage = new Beverage("Absinthe");
-	 	template.persist(beverage);
+		template.persist(beverage);
 
-		Beverage retrieved = template.get(beverage.id);
+		Beverage retrieved = template.get(beverage.getId());
 		assertThat(retrieved, is(notNullValue()));
 		assertThat(retrieved, is(beverage));
 	}
@@ -85,7 +90,7 @@ public class JpaTemplateIT {
 		Beverage beverage = new Beverage("Merlot");
 		template.persist(beverage);
 
-		Beverage fetched = template.getReference(beverage.id);
+		Beverage fetched = template.getReference(beverage.getId());
 		assertThat(fetched, is(notNullValue()));
 	}
 
@@ -95,7 +100,7 @@ public class JpaTemplateIT {
 
 		addSampleData();
 
-		template.getReference("made up");
+		template.getReference("made up").getId();
 	}
 
 	@Test
@@ -122,13 +127,13 @@ public class JpaTemplateIT {
 		template.persist(beverage1);
 
 		Beverage beverage2 = new Beverage("Chocolate milk");
-		beverage2.id = beverage1.id;
+		beverage2.setId(beverage1.getId());
 
 		template.merge(beverage2);
 		template.flush();
 
 		template.refresh(beverage1);
-		assertThat(beverage1.name, is(beverage2.name));
+		assertThat(beverage1.getName(), is(beverage2.getName()));
 	}
 
 	@Test
@@ -139,7 +144,7 @@ public class JpaTemplateIT {
 		template.persist(beverage1);
 
 		Beverage beverage2 = new Beverage("Red wine");
-		beverage2.id = beverage1.id;
+		beverage2.setId(beverage1.getId());
 		template.persist(beverage2);
 	}
 
@@ -173,7 +178,7 @@ public class JpaTemplateIT {
 	}
 
 	@Test
-	 public void shouldReturnEntityListWithOneElementWhenQueryingForExistingEntity() {
+	public void shouldReturnEntityListWithOneElementWhenQueryingForExistingEntity() {
 		addSampleData();
 
 		List<Beverage> beverages = template.query("from Beverage where name = ?", "Coffee");
