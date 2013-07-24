@@ -27,7 +27,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
-import com.threewks.thundr.jpa.exception.TransactionalAnnotationException;
 import com.threewks.thundr.view.ViewResolutionException;
 
 public class TransactionalActionInterceptorTest {

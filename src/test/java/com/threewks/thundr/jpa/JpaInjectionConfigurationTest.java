@@ -17,9 +17,13 @@
  */
 package com.threewks.thundr.jpa;
 
+import static com.atomicleopard.expressive.Expressive.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+
+import java.util.Map;
 
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
@@ -68,5 +72,22 @@ public class JpaInjectionConfigurationTest {
 		PersistenceManagerRegistry registry = injectionContext.get(PersistenceManagerRegistry.class);
 		assertThat(registry, is(notNullValue()));
 		assertThat(registry.get("default"), is(notNullValue()));
+	}
+
+	@Test
+	public void shouldReturnDefaultPersistenceManagerAndPersistenceUnitNameIfNoneSet() {
+		PowerMockito.mockStatic(Persistence.class);
+		when(Persistence.createEntityManagerFactory(Mockito.anyString())).thenReturn(mock(EntityManagerFactory.class));
+
+		injectionContext = new InjectionContextImpl();
+		injectionContext.inject(mock(ServletContext.class)).as(ServletContext.class);
+
+		ActionInterceptorRegistry actionInterceptorRegistry = mock(ActionInterceptorRegistry.class);
+		injectionContext.inject(actionInterceptorRegistry).as(ActionInterceptorRegistry.class);
+
+		JpaInjectionConfiguration config = new JpaInjectionConfiguration();
+		Map<String, String> results = config.getPersistenceUnitNames(injectionContext);
+		assertThat(results.size(), is(1));
+		assertThat(results, hasEntry("default", "default"));
 	}
 }

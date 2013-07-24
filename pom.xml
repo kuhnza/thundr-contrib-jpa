@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.threewks.thundr</groupId>
 		<artifactId>thundr-parent</artifactId>
-		<version>2</version>
+		<version>3</version>
 	</parent>
 
 	<artifactId>thundr-jpa</artifactId>
@@ -38,7 +38,7 @@
 		<dependency>
 			<groupId>com.threewks.thundr</groupId>
 			<artifactId>thundr</artifactId>
-			<version>0.9.9</version>
+			<version>0.9.10-SNAPSHOT</version>
 			<scope>compile</scope>
 		</dependency>
 
@@ -104,25 +104,6 @@
 
 	<build>
 		<plugins>
-			<plugin> <!-- Run Integration tests with Failsafe -->
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<version>2.15</version>
-				<executions>
-					<execution>
-						<id>failsafe-integration-tests</id>
-						<goals>
-							<goal>integration-test</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>failsafe-verify</id>
-						<goals>
-							<goal>verify</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
