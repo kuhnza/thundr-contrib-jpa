@@ -28,6 +28,13 @@
 		</developer>
 	</developers>
 
+	<scm>
+		<connection>scm:git:https://github.com/kuhnza/${project.name}</connection>
+		<developerConnection>scm:git:https://github.com/kuhnza/${project.name}</developerConnection>
+		<url>https://github.com/kuhnza/${project.name}</url>
+		<tag>HEAD</tag>
+	</scm>
+
 	<properties>
 		<hibernate.version>4.2.2.Final</hibernate.version>
 		<powermock.version>1.5.1</powermock.version>
