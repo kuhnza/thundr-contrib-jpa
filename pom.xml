@@ -45,7 +45,7 @@
 		<dependency>
 			<groupId>com.threewks.thundr</groupId>
 			<artifactId>thundr</artifactId>
-			<version>0.9.11-SNAPSHOT</version>
+			<version>0.9.11</version>
 			<scope>compile</scope>
 		</dependency>
 
