@@ -27,6 +27,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
 
+import com.threewks.thundr.jpa.intercept.DbSession;
+import com.threewks.thundr.jpa.intercept.DbSessionActionInterceptor;
 import com.threewks.thundr.jpa.intercept.Transactional;
 import com.threewks.thundr.jpa.intercept.TransactionalActionInterceptor;
 import org.junit.Before;
@@ -65,6 +67,12 @@ public class JpaInjectionConfigurationTest {
 	public void shouldInjectTransactionalActionInterceptor() {
 		ActionInterceptorRegistry registry = injectionContext.get(ActionInterceptorRegistry.class);
 		verify(registry).registerInterceptor(Matchers.eq(Transactional.class), Matchers.any(TransactionalActionInterceptor.class));
+	}
+
+	@Test
+	public void shouldInjectDbSessionActionInterceptor() {
+		ActionInterceptorRegistry registry = injectionContext.get(ActionInterceptorRegistry.class);
+		verify(registry).registerInterceptor(Matchers.eq(DbSession.class), Matchers.any(DbSessionActionInterceptor.class));
 	}
 
 	@Test

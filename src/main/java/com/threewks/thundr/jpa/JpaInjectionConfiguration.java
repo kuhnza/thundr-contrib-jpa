@@ -22,6 +22,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import com.threewks.thundr.jpa.intercept.DbSession;
+import com.threewks.thundr.jpa.intercept.DbSessionActionInterceptor;
 import com.threewks.thundr.jpa.intercept.Transactional;
 import com.threewks.thundr.jpa.intercept.TransactionalActionInterceptor;
 import org.apache.commons.lang3.StringUtils;
@@ -40,12 +42,13 @@ public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 	@Override
 	public void configure(UpdatableInjectionContext injectionContext) {
 		PersistenceManagerRegistry registry = initializePersistenceManagerRegistry(injectionContext);
-		registerTransactionalAnnotation(injectionContext, registry);
+		registerActionInterceptorAnnotations(injectionContext, registry);
 	}
 
-	protected final void registerTransactionalAnnotation(UpdatableInjectionContext injectionContext, PersistenceManagerRegistry persistenceManagerRegistry) {
+	protected final void registerActionInterceptorAnnotations(UpdatableInjectionContext injectionContext, PersistenceManagerRegistry persistenceManagerRegistry) {
 		ActionInterceptorRegistry actionInterceptorRegistry = injectionContext.get(ActionInterceptorRegistry.class);
 		actionInterceptorRegistry.registerInterceptor(Transactional.class, new TransactionalActionInterceptor(persistenceManagerRegistry));
+		actionInterceptorRegistry.registerInterceptor(DbSession.class, new DbSessionActionInterceptor(persistenceManagerRegistry));
 	}
 
 	protected final PersistenceManagerRegistry initializePersistenceManagerRegistry(UpdatableInjectionContext injectionContext) {
