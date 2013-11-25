@@ -64,8 +64,16 @@ public class Beverage {
 		return name;
 	}
 
+	public void setName(String name) {
+		this.name = name;
+	}
+
 	public boolean isAlcoholic() {
 		return alcoholic;
+	}
+
+	public void setAlcoholic(boolean alcoholic) {
+		this.alcoholic = alcoholic;
 	}
 
 	public void setId(String id) {

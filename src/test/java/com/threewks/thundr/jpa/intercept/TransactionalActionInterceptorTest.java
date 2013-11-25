@@ -15,12 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.threewks.thundr.jpa;
+package com.threewks.thundr.jpa.intercept;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import com.threewks.thundr.jpa.PersistenceManager;
+import com.threewks.thundr.jpa.PersistenceManagerRegistry;
+import com.threewks.thundr.jpa.PersistenceManagerRegistryImpl;
+import com.threewks.thundr.jpa.intercept.Transactional;
+import com.threewks.thundr.jpa.intercept.TransactionalActionInterceptor;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

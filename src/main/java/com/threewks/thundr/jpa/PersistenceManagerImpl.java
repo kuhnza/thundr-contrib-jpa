@@ -97,16 +97,12 @@ public class PersistenceManagerImpl implements PersistenceManager {
 	@Override
 	public void rollback() {
 		EntityTransaction transaction = getEntityManager().getTransaction();
-		if (transaction.isActive()) {
-			transaction.rollback();
-		}
+		transaction.rollback();
 	}
 
 	@Override
 	public void commit() {
 		EntityTransaction transaction = getEntityManager().getTransaction();
-		if (transaction.isActive()) {
-			transaction.commit();
-		}
+		transaction.commit();
 	}
 }

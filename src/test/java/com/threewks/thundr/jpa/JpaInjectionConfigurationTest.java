@@ -17,10 +17,8 @@
  */
 package com.threewks.thundr.jpa;
 
-import static com.atomicleopard.expressive.Expressive.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Map;
@@ -29,6 +27,8 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 import javax.servlet.ServletContext;
 
+import com.threewks.thundr.jpa.intercept.Transactional;
+import com.threewks.thundr.jpa.intercept.TransactionalActionInterceptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

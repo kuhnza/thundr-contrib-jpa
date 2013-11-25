@@ -22,6 +22,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import com.threewks.thundr.jpa.intercept.Transactional;
+import com.threewks.thundr.jpa.intercept.TransactionalActionInterceptor;
 import org.apache.commons.lang3.StringUtils;
 
 import com.threewks.thundr.action.method.ActionInterceptorRegistry;
