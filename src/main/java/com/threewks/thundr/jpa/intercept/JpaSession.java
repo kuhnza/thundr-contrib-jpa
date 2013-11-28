@@ -17,6 +17,8 @@
  */
 package com.threewks.thundr.jpa.intercept;
 
+import com.threewks.thundr.jpa.PersistenceManager;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -24,6 +26,23 @@ import java.lang.annotation.Target;
 
 @Target(value = { ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Transactional {
-	String value() default "";
+public @interface JpaSession {
+	/**
+	 * Overrides the default persistence unit name. Defaults to "default".
+	 */
+	String persistenceUnit() default PersistenceManager.DefaultName;
+
+	/**
+	 * Set to <code>true</code> to manage calls inside of a transaction. Defaults to <code>false</code>.
+	 */
+	boolean transactional() default false;
+
+	/**
+	 * Sets the transaction isolation level for the underlying connection. Defaults to -1 which causes
+	 * indicates it should use the connection's (i.e the databases' default) isolation level which is
+	 * implementation specific.
+	 *
+	 * @see java.sql.Connection for isolation level constants
+	 */
+	int transactionIsolation() default -1;
 }

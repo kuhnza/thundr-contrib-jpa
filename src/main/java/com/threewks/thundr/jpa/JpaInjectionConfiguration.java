@@ -17,23 +17,19 @@
  */
 package com.threewks.thundr.jpa;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import javax.servlet.ServletContext;
-
-import com.threewks.thundr.jpa.intercept.DbSession;
-import com.threewks.thundr.jpa.intercept.DbSessionActionInterceptor;
-import com.threewks.thundr.jpa.intercept.Transactional;
-import com.threewks.thundr.jpa.intercept.TransactionalActionInterceptor;
-import org.apache.commons.lang3.StringUtils;
-
 import com.threewks.thundr.action.method.ActionInterceptorRegistry;
 import com.threewks.thundr.configuration.Environment;
 import com.threewks.thundr.injection.BaseInjectionConfiguration;
 import com.threewks.thundr.injection.UpdatableInjectionContext;
 import com.threewks.thundr.jpa.exception.JpaException;
+import com.threewks.thundr.jpa.intercept.JpaSession;
+import com.threewks.thundr.jpa.intercept.JpaSessionActionInterceptor;
 import com.threewks.thundr.logger.Logger;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.servlet.ServletContext;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 	public static final String PersistenceManagerRegistry = String.format("thundr-jpa-%s", PersistenceManagerRegistryImpl.class);
@@ -47,8 +43,7 @@ public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
 
 	protected final void registerActionInterceptorAnnotations(UpdatableInjectionContext injectionContext, PersistenceManagerRegistry persistenceManagerRegistry) {
 		ActionInterceptorRegistry actionInterceptorRegistry = injectionContext.get(ActionInterceptorRegistry.class);
-		actionInterceptorRegistry.registerInterceptor(Transactional.class, new TransactionalActionInterceptor(persistenceManagerRegistry));
-		actionInterceptorRegistry.registerInterceptor(DbSession.class, new DbSessionActionInterceptor(persistenceManagerRegistry));
+		actionInterceptorRegistry.registerInterceptor(JpaSession.class, new JpaSessionActionInterceptor(persistenceManagerRegistry));
 	}
 
 	protected final PersistenceManagerRegistry initializePersistenceManagerRegistry(UpdatableInjectionContext injectionContext) {

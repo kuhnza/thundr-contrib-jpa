@@ -17,20 +17,11 @@
  */
 package com.threewks.thundr.jpa;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.*;
-
-import java.util.Map;
-
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
-import javax.servlet.ServletContext;
-
-import com.threewks.thundr.jpa.intercept.DbSession;
-import com.threewks.thundr.jpa.intercept.DbSessionActionInterceptor;
-import com.threewks.thundr.jpa.intercept.Transactional;
-import com.threewks.thundr.jpa.intercept.TransactionalActionInterceptor;
+import com.threewks.thundr.action.method.ActionInterceptorRegistry;
+import com.threewks.thundr.injection.InjectionContextImpl;
+import com.threewks.thundr.injection.UpdatableInjectionContext;
+import com.threewks.thundr.jpa.intercept.JpaSession;
+import com.threewks.thundr.jpa.intercept.JpaSessionActionInterceptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,9 +31,14 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import com.threewks.thundr.action.method.ActionInterceptorRegistry;
-import com.threewks.thundr.injection.InjectionContextImpl;
-import com.threewks.thundr.injection.UpdatableInjectionContext;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
+import javax.servlet.ServletContext;
+import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Persistence.class)
@@ -64,15 +60,9 @@ public class JpaInjectionConfigurationTest {
 	}
 
 	@Test
-	public void shouldInjectTransactionalActionInterceptor() {
-		ActionInterceptorRegistry registry = injectionContext.get(ActionInterceptorRegistry.class);
-		verify(registry).registerInterceptor(Matchers.eq(Transactional.class), Matchers.any(TransactionalActionInterceptor.class));
-	}
-
-	@Test
 	public void shouldInjectDbSessionActionInterceptor() {
 		ActionInterceptorRegistry registry = injectionContext.get(ActionInterceptorRegistry.class);
-		verify(registry).registerInterceptor(Matchers.eq(DbSession.class), Matchers.any(DbSessionActionInterceptor.class));
+		verify(registry).registerInterceptor(Matchers.eq(JpaSession.class), Matchers.any(JpaSessionActionInterceptor.class));
 	}
 
 	@Test

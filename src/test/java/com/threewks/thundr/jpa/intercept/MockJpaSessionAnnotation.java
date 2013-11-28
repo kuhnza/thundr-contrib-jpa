@@ -21,11 +21,11 @@ import com.threewks.thundr.logger.Logger;
 
 import java.lang.annotation.Annotation;
 
-public class MockDbSessionAnnotation implements Annotation, DbSession {
+public class MockJpaSessionAnnotation implements Annotation, JpaSession {
 	@Override
 	public String persistenceUnit() {
 		try {
-			return (String) DbSession.class.getMethod("persistenceUnit").getDefaultValue();
+			return (String) JpaSession.class.getMethod("persistenceUnit").getDefaultValue();
 		} catch (NoSuchMethodException e) {
 			Logger.error(e.getMessage());
 			throw new RuntimeException(e);
@@ -35,7 +35,7 @@ public class MockDbSessionAnnotation implements Annotation, DbSession {
 	@Override
 	public boolean transactional() {
 		try {
-			return (Boolean) DbSession.class.getMethod("transactional").getDefaultValue();
+			return (Boolean) JpaSession.class.getMethod("transactional").getDefaultValue();
 		} catch (NoSuchMethodException e) {
 			Logger.error(e.getMessage());
 			throw new RuntimeException(e);
@@ -44,11 +44,11 @@ public class MockDbSessionAnnotation implements Annotation, DbSession {
 
 	@Override
 	public int transactionIsolation() {
-		return DbSessionActionInterceptor.DefaultTransactionIsolation;
+		return JpaSessionActionInterceptor.DefaultTransactionIsolation;
 	}
 
 	@Override
 	public Class<? extends Annotation> annotationType() {
-		return DbSession.class;
+		return JpaSession.class;
 	}
 }

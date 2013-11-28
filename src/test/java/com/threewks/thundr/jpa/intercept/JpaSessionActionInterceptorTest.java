@@ -49,18 +49,18 @@ import static org.mockito.Mockito.*;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Persistence.class)
-public class DbSessionActionInterceptorTest {
+public class JpaSessionActionInterceptorTest {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
 	private Connection connection;
-	private DbSession annotation;
+	private JpaSession annotation;
 	private PersistenceManager persistenceManager;
-	private DbSessionActionInterceptor interceptor;
+	private JpaSessionActionInterceptor interceptor;
 
 	@Before
 	public void before() {
-		annotation = spy(new MockDbSessionAnnotation());
+		annotation = spy(new MockJpaSessionAnnotation());
 
 		EntityManager entityManager = mock(EntityManager.class);
 		when(entityManager.getTransaction()).thenReturn(mock(EntityTransaction.class));
@@ -79,7 +79,7 @@ public class DbSessionActionInterceptorTest {
 		PersistenceManagerRegistry persistenceManagerRegistry = new PersistenceManagerRegistryImpl();
 		persistenceManagerRegistry.register("default", persistenceManager);
 
-		interceptor = new DbSessionActionInterceptor(persistenceManagerRegistry);
+		interceptor = new JpaSessionActionInterceptor(persistenceManagerRegistry);
 	}
 
 	@Test

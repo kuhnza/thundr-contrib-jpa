@@ -31,7 +31,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> {
+public class JpaSessionActionInterceptor implements ActionInterceptor<JpaSession> {
 	/**
 	 * Default transaction isolation level means go with whatever the connection is currently set to.
 	 */
@@ -40,13 +40,13 @@ public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> 
 	private ThreadLocal<Integer> threadLocalOriginalTransactionIsolation;
 	private PersistenceManagerRegistry persistenceManagerRegistry;
 
-	public DbSessionActionInterceptor(PersistenceManagerRegistry persistenceManagerRegistry) {
+	public JpaSessionActionInterceptor(PersistenceManagerRegistry persistenceManagerRegistry) {
 		this.persistenceManagerRegistry = persistenceManagerRegistry;
 		this.threadLocalOriginalTransactionIsolation = new ThreadLocal<Integer>();
 	}
 
 	@Override
-	public <T> T before(DbSession annotation, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+	public <T> T before(JpaSession annotation, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
 		Logger.debug("Initializing entity manager.");
 		PersistenceManager persistenceManager = getPersistenceManager(annotation);
 
@@ -63,7 +63,7 @@ public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> 
 	}
 
 	@Override
-	public <T> T after(DbSession annotation, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+	public <T> T after(JpaSession annotation, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
 		PersistenceManager persistenceManager = getPersistenceManager(annotation);
 		try {
  			if (annotation.transactional()) {
@@ -84,7 +84,7 @@ public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> 
 	}
 
 	@Override
-	public <T> T exception(DbSession annotation, Exception e, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+	public <T> T exception(JpaSession annotation, Exception e, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
 		PersistenceManager persistenceManager = getPersistenceManager(annotation);
 		try {
 			if (annotation.transactional()) {
@@ -109,7 +109,7 @@ public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> 
 		return entityManager.unwrap(Connection.class);
 	}
 
-	private PersistenceManager getPersistenceManager(DbSession annotation) {
+	private PersistenceManager getPersistenceManager(JpaSession annotation) {
 		String persistenceManagerName = annotation.persistenceUnit();
 		return persistenceManagerRegistry.get(persistenceManagerName);
 	}

@@ -17,13 +17,13 @@
  */
 package com.threewks.thundr.jpa;
 
+import com.threewks.thundr.jpa.exception.JpaException;
+import com.threewks.thundr.logger.Logger;
+
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-
-import com.threewks.thundr.jpa.exception.JpaException;
-import com.threewks.thundr.logger.Logger;
 
 public class PersistenceManagerImpl implements PersistenceManager {
 	private EntityManagerFactory entityManagerFactory;
