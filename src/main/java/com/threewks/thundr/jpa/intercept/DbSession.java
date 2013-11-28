@@ -36,4 +36,13 @@ public @interface DbSession {
 	 * Set to <code>true</code> to manage calls inside of a transaction. Defaults to <code>false</code>.
 	 */
 	boolean transactional() default false;
+
+	/**
+	 * Sets the transaction isolation level for the underlying connection. Defaults to -1 which causes
+	 * indicates it should use the connection's (i.e the databases' default) isolation level which is
+	 * implementation specific.
+	 *
+	 * @see java.sql.Connection for isolation level constants
+	 */
+	int transactionIsolation() default -1;
 }

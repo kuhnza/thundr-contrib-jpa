@@ -17,16 +17,15 @@
  */
 package com.threewks.thundr.jpa.intercept;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.threewks.thundr.action.method.ActionInterceptor;
 import com.threewks.thundr.jpa.PersistenceManager;
 import com.threewks.thundr.jpa.PersistenceManagerRegistry;
-import org.apache.commons.lang3.StringUtils;
-
-import com.threewks.thundr.action.method.ActionInterceptor;
 import com.threewks.thundr.logger.Logger;
 import com.threewks.thundr.view.ViewResolutionException;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 public class TransactionalActionInterceptor implements ActionInterceptor<Transactional> {
 	private PersistenceManagerRegistry persistenceManagerRegistry;

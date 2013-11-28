@@ -21,24 +21,40 @@ package com.threewks.thundr.jpa.intercept;
 import com.threewks.thundr.action.method.ActionInterceptor;
 import com.threewks.thundr.jpa.PersistenceManager;
 import com.threewks.thundr.jpa.PersistenceManagerRegistry;
+import com.threewks.thundr.jpa.exception.JpaException;
 import com.threewks.thundr.logger.Logger;
 import com.threewks.thundr.view.ViewResolutionException;
 
+import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> {
+	/**
+	 * Default transaction isolation level means go with whatever the connection is currently set to.
+	 */
+	public static int DefaultTransactionIsolation = -1;
+
+	private ThreadLocal<Integer> threadLocalOriginalTransactionIsolation;
 	private PersistenceManagerRegistry persistenceManagerRegistry;
 
 	public DbSessionActionInterceptor(PersistenceManagerRegistry persistenceManagerRegistry) {
 		this.persistenceManagerRegistry = persistenceManagerRegistry;
+		this.threadLocalOriginalTransactionIsolation = new ThreadLocal<Integer>();
 	}
 
 	@Override
 	public <T> T before(DbSession annotation, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
 		Logger.debug("Initializing entity manager.");
 		PersistenceManager persistenceManager = getPersistenceManager(annotation);
+
 		if (annotation.transactional()) {
+			Logger.debug("Configuring transaction isolation level to: %s...", annotation.transactionIsolation());
+			configureTransactionIsolation(persistenceManager, annotation.transactionIsolation());
+			Logger.debug("Transaction isolation level configured.", annotation.transactionIsolation());
+
 			Logger.debug("Beginning transaction...");
 			persistenceManager.beginTransaction();
 			Logger.debug("Inside transaction.");
@@ -56,6 +72,10 @@ public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> 
 				Logger.debug("Transaction committed.");
 			}
 		} finally {
+			Logger.debug("Restoring transaction isolation level...");
+			restoreDefaultTransactionIsolation(persistenceManager);
+			Logger.debug("Transaction isolation level restored.");
+
 			Logger.debug("Closing entity manager...");
 			persistenceManager.closeEntityManager();
 			Logger.debug("Entity manager closed.");
@@ -73,6 +93,10 @@ public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> 
 				Logger.debug("Transaction rolled back.");
 			}
 		} finally {
+			Logger.debug("Restoring transaction isolation level...");
+			restoreDefaultTransactionIsolation(persistenceManager);
+			Logger.debug("Transaction isolation level restored.");
+
 			Logger.debug("Closing entity manager...");
 			persistenceManager.closeEntityManager();
 			Logger.debug("Entity manager closed.");
@@ -80,8 +104,42 @@ public class DbSessionActionInterceptor implements ActionInterceptor<DbSession> 
 		throw new ViewResolutionException(e, e.getMessage());
 	}
 
+	private Connection getConnection(PersistenceManager persistenceManager) {
+		EntityManager entityManager = persistenceManager.getEntityManager();
+		return entityManager.unwrap(Connection.class);
+	}
+
 	private PersistenceManager getPersistenceManager(DbSession annotation) {
 		String persistenceManagerName = annotation.persistenceUnit();
 		return persistenceManagerRegistry.get(persistenceManagerName);
+	}
+
+	private void configureTransactionIsolation(PersistenceManager persistenceManager, int isolationLevel) {
+		Connection connection = getConnection(persistenceManager);
+		try {
+			if (isolationLevel != DefaultTransactionIsolation) {
+				threadLocalOriginalTransactionIsolation.set(connection.getTransactionIsolation());
+				connection.setTransactionIsolation(isolationLevel);
+			}
+		} catch (SQLException e) {
+			String message = "Error configuring transaction isolation level: %s";
+			Logger.error(message, e.getMessage());
+			throw new JpaException(e, message, e.getMessage());
+		}
+	}
+
+	private void restoreDefaultTransactionIsolation(PersistenceManager persistenceManager) {
+		Integer isolationLevel = threadLocalOriginalTransactionIsolation.get();
+		if (isolationLevel != null) {
+			try {
+				Connection connection = getConnection(persistenceManager);
+				connection.setTransactionIsolation(isolationLevel);
+				threadLocalOriginalTransactionIsolation.set(null);
+			} catch (SQLException e) {
+				String message = "Error restoring transaction isolation level: %s";
+				Logger.error(message, e.getMessage());
+				throw new JpaException(e, message, e.getMessage());
+			}
+		}
 	}
 }

@@ -18,6 +18,7 @@
 package com.threewks.thundr.jpa.intercept;
 
 import com.threewks.thundr.jpa.PersistenceManager;
+import com.threewks.thundr.jpa.PersistenceManagerImpl;
 import com.threewks.thundr.jpa.PersistenceManagerRegistry;
 import com.threewks.thundr.jpa.PersistenceManagerRegistryImpl;
 import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
@@ -26,16 +27,33 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.powermock.api.mockito.PowerMockito;
+import org.powermock.core.classloader.annotations.PrepareForTest;
+import org.powermock.modules.junit4.PowerMockRunner;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
+@RunWith(PowerMockRunner.class)
+@PrepareForTest(Persistence.class)
 public class DbSessionActionInterceptorTest {
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
+	private Connection connection;
 	private DbSession annotation;
 	private PersistenceManager persistenceManager;
 	private DbSessionActionInterceptor interceptor;
@@ -44,8 +62,20 @@ public class DbSessionActionInterceptorTest {
 	public void before() {
 		annotation = spy(new MockDbSessionAnnotation());
 
-		persistenceManager = mock(PersistenceManager.class);
+		EntityManager entityManager = mock(EntityManager.class);
+		when(entityManager.getTransaction()).thenReturn(mock(EntityTransaction.class));
 
+		connection = mock(Connection.class);
+		doReturn(connection).when(entityManager).unwrap(any(Class.class));
+
+		EntityManagerFactory entityManagerFactory = mock(EntityManagerFactory.class);
+		when(entityManagerFactory.isOpen()).thenReturn(true);
+		when(entityManagerFactory.createEntityManager()).thenReturn(entityManager);
+
+		PowerMockito.mockStatic(Persistence.class);
+		when(Persistence.createEntityManagerFactory(Mockito.anyString())).thenReturn(entityManagerFactory);
+
+		persistenceManager = spy(new PersistenceManagerImpl("default"));
 		PersistenceManagerRegistry persistenceManagerRegistry = new PersistenceManagerRegistryImpl();
 		persistenceManagerRegistry.register("default", persistenceManager);
 
@@ -135,5 +165,47 @@ public class DbSessionActionInterceptorTest {
 
 		when(annotation.persistenceUnit()).thenReturn("i don't exist");
 		interceptor.before(annotation, null, null);
+	}
+
+	@Test
+	public void shouldConfigureAlternateTransactionIsolationThenRestoreDefaultTransactionIsolation() throws SQLException {
+		int defaultIsolationLevel = Connection.TRANSACTION_NONE;
+		int temporaryIsolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
+
+		when(annotation.transactional()).thenReturn(true);
+		when(annotation.transactionIsolation()).thenReturn(temporaryIsolationLevel);
+		when(connection.getTransactionIsolation()).thenReturn(defaultIsolationLevel);
+
+		interceptor.before(annotation, null, null);
+		interceptor.after(annotation, null, null);
+
+		ArgumentCaptor<Integer> argument = ArgumentCaptor.forClass(Integer.class);
+		verify(connection, times(2)).setTransactionIsolation(argument.capture());
+		List<Integer> values = argument.getAllValues();
+		assertThat(values.size(), is(2));
+		assertThat(values.get(0), is(temporaryIsolationLevel));
+		assertThat(values.get(1), is(defaultIsolationLevel));
+	}
+
+	@Test
+	public void shouldConfigureAlternateTransactionIsolationThenRestoreDefaultTransactionIsolationOnException() throws SQLException {
+		thrown.expect(ViewResolutionException.class);
+
+		int defaultIsolationLevel = Connection.TRANSACTION_NONE;
+		int temporaryIsolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
+
+		when(annotation.transactional()).thenReturn(true);
+		when(annotation.transactionIsolation()).thenReturn(temporaryIsolationLevel);
+		when(connection.getTransactionIsolation()).thenReturn(defaultIsolationLevel);
+
+		interceptor.before(annotation, null, null);
+		interceptor.exception(annotation, new Exception("Expected"), null, null);
+
+		ArgumentCaptor<Integer> argument = ArgumentCaptor.forClass(Integer.class);
+		verify(connection, times(2)).setTransactionIsolation(argument.capture());
+		List<Integer> values = argument.getAllValues();
+		assertThat(values.size(), is(2));
+		assertThat(values.get(0), is(temporaryIsolationLevel));
+		assertThat(values.get(1), is(defaultIsolationLevel));
 	}
 }

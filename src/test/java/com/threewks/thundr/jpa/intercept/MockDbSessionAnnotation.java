@@ -43,6 +43,11 @@ public class MockDbSessionAnnotation implements Annotation, DbSession {
 	}
 
 	@Override
+	public int transactionIsolation() {
+		return DbSessionActionInterceptor.DefaultTransactionIsolation;
+	}
+
+	@Override
 	public Class<? extends Annotation> annotationType() {
 		return DbSession.class;
 	}
