@@ -9,7 +9,7 @@
 
 	<artifactId>thundr-jpa</artifactId>
 	<packaging>jar</packaging>
-	<version>0.0.4</version>
+	<version>0.0.5-SNAPSHOT</version>
 
 	<name>thundr-jpa</name>
 	<url>http://github.com/kuhnza/thundr-jpa/</url>
@@ -32,7 +32,7 @@
 		<connection>scm:git:https://github.com/kuhnza/${project.name}</connection>
 		<developerConnection>scm:git:https://github.com/kuhnza/${project.name}</developerConnection>
 		<url>https://github.com/kuhnza/${project.name}</url>
-		<tag>v0.0.4</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<properties>
