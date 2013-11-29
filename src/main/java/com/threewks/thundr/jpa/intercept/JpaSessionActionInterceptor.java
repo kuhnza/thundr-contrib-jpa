@@ -66,7 +66,7 @@ public class JpaSessionActionInterceptor implements ActionInterceptor<JpaSession
 	public <T> T after(JpaSession annotation, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
 		PersistenceManager persistenceManager = getPersistenceManager(annotation);
 		try {
- 			if (annotation.transactional()) {
+			if (annotation.transactional()) {
 				Logger.debug("Committing transaction...");
 				persistenceManager.commit();
 				Logger.debug("Transaction committed.");
@@ -115,9 +115,9 @@ public class JpaSessionActionInterceptor implements ActionInterceptor<JpaSession
 	}
 
 	private void configureTransactionIsolation(PersistenceManager persistenceManager, int isolationLevel) {
-		Connection connection = getConnection(persistenceManager);
 		try {
 			if (isolationLevel != DefaultTransactionIsolation) {
+				Connection connection = getConnection(persistenceManager);
 				threadLocalOriginalTransactionIsolation.set(connection.getTransactionIsolation());
 				connection.setTransactionIsolation(isolationLevel);
 			}
