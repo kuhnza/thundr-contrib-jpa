@@ -17,19 +17,18 @@
  */
 package com.threewks.thundr.jpa.intercept;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.threewks.thundr.action.method.ActionInterceptor;
 import com.threewks.thundr.jpa.PersistenceManager;
 import com.threewks.thundr.jpa.PersistenceManagerRegistry;
 import com.threewks.thundr.jpa.exception.JpaException;
 import com.threewks.thundr.logger.Logger;
-import com.threewks.thundr.view.ViewResolutionException;
-
-import javax.persistence.EntityManager;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.sql.Connection;
-import java.sql.SQLException;
 
 public class JpaSessionActionInterceptor implements ActionInterceptor<JpaSession> {
 	/**
@@ -63,7 +62,7 @@ public class JpaSessionActionInterceptor implements ActionInterceptor<JpaSession
 	}
 
 	@Override
-	public <T> T after(JpaSession annotation, HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) {
+	public <T> T after(JpaSession annotation, Object view, HttpServletRequest req, HttpServletResponse resp) {
 		PersistenceManager persistenceManager = getPersistenceManager(annotation);
 		try {
 			if (annotation.transactional()) {
@@ -101,7 +100,7 @@ public class JpaSessionActionInterceptor implements ActionInterceptor<JpaSession
 			persistenceManager.closeEntityManager();
 			Logger.debug("Entity manager closed.");
 		}
-		throw new ViewResolutionException(e, e.getMessage());
+		return null;
 	}
 
 	private Connection getConnection(PersistenceManager persistenceManager) {

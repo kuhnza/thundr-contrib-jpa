@@ -20,6 +20,7 @@ package com.threewks.thundr.jpa;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +32,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import com.google.common.collect.Maps;
-import com.threewks.thundr.configuration.Environment;
 import com.threewks.thundr.jpa.model.Beverage;
 import com.threewks.thundr.jpa.rule.SetupPersistenceManager;
 import com.threewks.thundr.jpa.rule.SetupTransaction;
@@ -197,7 +196,7 @@ public class JpaTemplateIT {
 	public void shouldReturnEntityListWhenQueryingWithNamedParameter() {
 		addSampleData();
 
-		Map<String, Object> params = Maps.newHashMap();
+		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("name", "Coffee");
 
 		List<Beverage> beverages = template.query("from Beverage where name = :name", params);
@@ -227,7 +226,7 @@ public class JpaTemplateIT {
 	public void shouldReturnEntityListWhenUsingNamedQueryWithParameterMap() {
 		addSampleData();
 
-		Map<String, Object> params = Maps.newHashMap();
+		Map<String, Object> params = new HashMap<String, Object>();
 		params.put("alcoholic", false);
 
 		List<Beverage> beverages = template.namedQuery("Beverage.findAllByType", params);
