@@ -17,15 +17,18 @@
  */
 package com.threewks.thundr.jpa;
 
-import com.threewks.thundr.jpa.model.Beverage;
-import com.threewks.thundr.jpa.rule.SetupPersistenceManager;
-import org.junit.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.ClassRule;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import com.threewks.thundr.jpa.model.Beverage;
+import com.threewks.thundr.jpa.rule.SetupPersistenceManager;
 
 public class JpaTemplateNonTransactionalIT {
 	@ClassRule

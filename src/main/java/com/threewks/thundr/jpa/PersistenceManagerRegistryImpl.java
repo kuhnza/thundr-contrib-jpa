@@ -17,13 +17,13 @@
  */
 package com.threewks.thundr.jpa;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import com.google.common.collect.Maps;
 import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
 
 public class PersistenceManagerRegistryImpl implements PersistenceManagerRegistry {
-	private ConcurrentMap<String, PersistenceManager> instances = Maps.newConcurrentMap();
+	private ConcurrentMap<String, PersistenceManager> instances = new ConcurrentHashMap<String, PersistenceManager>();
 
 	@Override
 	public void register(String persistenceUnit, PersistenceManager persistenceManager) {

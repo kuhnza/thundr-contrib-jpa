@@ -17,29 +17,56 @@
  */
 package com.threewks.thundr.jpa;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import javax.servlet.ServletContext;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.threewks.thundr.action.method.ActionInterceptorRegistry;
 import com.threewks.thundr.configuration.Environment;
-import com.threewks.thundr.injection.BaseInjectionConfiguration;
+import com.threewks.thundr.injection.InjectionContext;
+import com.threewks.thundr.injection.Module;
 import com.threewks.thundr.injection.UpdatableInjectionContext;
 import com.threewks.thundr.jpa.exception.JpaException;
 import com.threewks.thundr.jpa.intercept.JpaSession;
 import com.threewks.thundr.jpa.intercept.JpaSessionActionInterceptor;
 import com.threewks.thundr.logger.Logger;
-import org.apache.commons.lang3.StringUtils;
+import com.threewks.thundr.module.DependencyRegistry;
 
-import javax.servlet.ServletContext;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-public class JpaInjectionConfiguration extends BaseInjectionConfiguration {
+public class JpaModule implements Module {
 	public static final String PersistenceManagerRegistry = String.format("thundr-jpa-%s", PersistenceManagerRegistryImpl.class);
 	public static final String PersistenceManagersConfigName = "persistenceManagers";
+
+	@Override
+	public void requires(DependencyRegistry dependencyRegistry) {
+		
+	}
+
+	@Override
+	public void initialise(UpdatableInjectionContext injectionContext) {
+		
+	}
+
 
 	@Override
 	public void configure(UpdatableInjectionContext injectionContext) {
 		PersistenceManagerRegistry registry = initializePersistenceManagerRegistry(injectionContext);
 		registerActionInterceptorAnnotations(injectionContext, registry);
 	}
+	
+	@Override
+	public void start(UpdatableInjectionContext injectionContext) {
+		
+	}
+
+	@Override
+	public void stop(InjectionContext injectionContext) {
+		PersistenceManagerRegistry registry = injectionContext.get(PersistenceManagerRegistry.class);
+		registry.clear();
+	}
+	
 
 	protected final void registerActionInterceptorAnnotations(UpdatableInjectionContext injectionContext, PersistenceManagerRegistry persistenceManagerRegistry) {
 		ActionInterceptorRegistry actionInterceptorRegistry = injectionContext.get(ActionInterceptorRegistry.class);
