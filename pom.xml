@@ -9,7 +9,7 @@
 
 	<artifactId>thundr-jpa</artifactId>
 	<packaging>jar</packaging>
-	<version>0.0.7-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 
 	<name>thundr-jpa</name>
 	<url>http://github.com/kuhnza/thundr-jpa/</url>
