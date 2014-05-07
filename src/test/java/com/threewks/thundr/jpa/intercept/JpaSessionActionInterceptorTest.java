@@ -17,12 +17,20 @@
  */
 package com.threewks.thundr.jpa.intercept;
 
-import com.threewks.thundr.jpa.PersistenceManager;
-import com.threewks.thundr.jpa.PersistenceManagerImpl;
-import com.threewks.thundr.jpa.PersistenceManagerRegistry;
-import com.threewks.thundr.jpa.PersistenceManagerRegistryImpl;
-import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
-import com.threewks.thundr.view.ViewResolutionException;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
+import javax.persistence.Persistence;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,18 +42,11 @@ import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.Persistence;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.*;
+import com.threewks.thundr.jpa.PersistenceManager;
+import com.threewks.thundr.jpa.PersistenceManagerImpl;
+import com.threewks.thundr.jpa.PersistenceManagerRegistry;
+import com.threewks.thundr.jpa.PersistenceManagerRegistryImpl;
+import com.threewks.thundr.jpa.exception.PersistenceManagerDoesNotExistException;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest(Persistence.class)
@@ -58,6 +59,7 @@ public class JpaSessionActionInterceptorTest {
 	private PersistenceManager persistenceManager;
 	private JpaSessionActionInterceptor interceptor;
 
+	@SuppressWarnings("unchecked")
 	@Before
 	public void before() {
 		annotation = spy(new MockJpaSessionAnnotation());
@@ -90,7 +92,6 @@ public class JpaSessionActionInterceptorTest {
 		verify(persistenceManager).beginTransaction();
 	}
 
-
 	@Test
 	public void shouldNotBeginTransactionWhenNoTransaction() {
 		when(annotation.transactional()).thenReturn(false);
@@ -103,7 +104,7 @@ public class JpaSessionActionInterceptorTest {
 	public void shouldCommitTransactionAndCloseEntityManager() {
 		when(annotation.transactional()).thenReturn(true);
 
-		interceptor.after(annotation, null, null);
+		interceptor.after(annotation, null, null, null);
 		verify(persistenceManager).commit();
 		verify(persistenceManager).closeEntityManager();
 	}
@@ -112,7 +113,7 @@ public class JpaSessionActionInterceptorTest {
 	public void shouldNotAttemptToCommitWhenNoTransaction() {
 		when(annotation.transactional()).thenReturn(false);
 
-		interceptor.after(annotation, null, null);
+		interceptor.after(annotation, null, null, null);
 		verify(persistenceManager, times(0)).commit();
 		verify(persistenceManager).closeEntityManager();
 	}
@@ -123,7 +124,7 @@ public class JpaSessionActionInterceptorTest {
 
 		doThrow(new RuntimeException("expected")).when(persistenceManager).commit();
 		try {
-			interceptor.after(annotation, null, null);
+			interceptor.after(annotation,  null, null, null);
 			fail("Expected exception");
 		} catch (RuntimeException e) {
 			assertThat(e.getMessage(), is("expected"));
@@ -136,9 +137,8 @@ public class JpaSessionActionInterceptorTest {
 	public void shouldRollbackTransactionAndCloseEntityManager() {
 		when(annotation.transactional()).thenReturn(true);
 
-		thrown.expect(ViewResolutionException.class);
-
-		interceptor.exception(annotation, new Exception("Intentional"), null, null);
+		Object view = interceptor.exception(annotation, new Exception("Intentional"), null, null);
+		assertThat(view, is(nullValue()));
 		verify(persistenceManager).rollback();
 		verify(persistenceManager).closeEntityManager();
 	}
@@ -177,7 +177,7 @@ public class JpaSessionActionInterceptorTest {
 		when(connection.getTransactionIsolation()).thenReturn(defaultIsolationLevel);
 
 		interceptor.before(annotation, null, null);
-		interceptor.after(annotation, null, null);
+		interceptor.after(annotation,  null, null, null);
 
 		ArgumentCaptor<Integer> argument = ArgumentCaptor.forClass(Integer.class);
 		verify(connection, times(2)).setTransactionIsolation(argument.capture());
@@ -189,8 +189,6 @@ public class JpaSessionActionInterceptorTest {
 
 	@Test
 	public void shouldConfigureAlternateTransactionIsolationThenRestoreDefaultTransactionIsolationOnException() throws SQLException {
-		thrown.expect(ViewResolutionException.class);
-
 		int defaultIsolationLevel = Connection.TRANSACTION_NONE;
 		int temporaryIsolationLevel = Connection.TRANSACTION_REPEATABLE_READ;
 
@@ -199,7 +197,8 @@ public class JpaSessionActionInterceptorTest {
 		when(connection.getTransactionIsolation()).thenReturn(defaultIsolationLevel);
 
 		interceptor.before(annotation, null, null);
-		interceptor.exception(annotation, new Exception("Expected"), null, null);
+		Object view = interceptor.exception(annotation, new Exception("Expected"), null, null);
+		assertThat(view, is(nullValue()));
 
 		ArgumentCaptor<Integer> argument = ArgumentCaptor.forClass(Integer.class);
 		verify(connection, times(2)).setTransactionIsolation(argument.capture());
